@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Blog;
+use App\Models\Post;
 
 class BlogController extends Controller
 {
     /**
-     * Menampilkan halaman Blog (Konten Karakter).
-     * Berisi konten tentang tokoh karakter yang dipilih tim: Darth Vader.
-     * Alur: Route -> Controller -> Model (Blog) -> View (blog)
+     * Menampilkan halaman Blog (Konten Karakter & Imperial Posts).
+     * Mendemonstrasikan Model Blog serta Eloquent One to Many (User hasMany Post).
+     * Alur: Route -> Controller -> Model (Blog & Post) -> View (blog)
      */
     public function index()
     {
@@ -19,9 +20,13 @@ class BlogController extends Controller
         // Mengambil data dari Model Blog (Database SQLite)
         try {
             $blogModel = Blog::first();
-            $character = $blogModel ? $blogModel->toArray() : null;
+            $blog = $blogModel ? $blogModel->toArray() : null;
+            $character = $blog;
+            $posts = Post::with('author')->latest()->get();
         } catch (\Throwable $e) {
+            $blog = null;
             $character = null;
+            $posts = collect();
         }
 
         // Fallback jika belum di-seed
@@ -49,8 +54,18 @@ class BlogController extends Controller
                     ['period' => 'Battle of Endor', 'event' => 'Menebus dosanya dengan menyelamatkan putranya, Luke Skywalker, serta menghancurkan Emperor.']
                 ]
             ];
+            $blog = $character;
         }
 
-        return view('blog', compact('title', 'character'));
+        return view('blog', compact('title', 'blog', 'character', 'posts'));
+    }
+
+    /**
+     * Menampilkan detail single post (One to Many: Post milik User/Author)
+     */
+    public function show(Post $post)
+    {
+        $title = $post->title . " - Imperial Post";
+        return view('post', compact('title', 'post'));
     }
 }

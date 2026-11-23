@@ -6,6 +6,8 @@ use Illuminate\Database\Seeder;
 use App\Models\Home;
 use App\Models\About;
 use App\Models\Blog;
+use App\Models\User;
+use App\Models\Post;
 
 class DatabaseSeeder extends Seeder
 {
@@ -92,5 +94,54 @@ class DatabaseSeeder extends Seeder
                 ]
             ]
         );
+
+        // 4. Data One to Many: Users (Authors) -> Posts
+        $vader = User::firstOrCreate(
+            ['email' => 'vader@empire.gal'],
+            [
+                'name' => 'Darth Vader',
+                'password' => bcrypt('password'),
+            ]
+        );
+
+        $palpatine = User::firstOrCreate(
+            ['email' => 'emperor@empire.gal'],
+            [
+                'name' => 'Emperor Palpatine',
+                'password' => bcrypt('password'),
+            ]
+        );
+
+        // Post milik Darth Vader
+        Post::firstOrCreate(
+            ['slug' => 'the-power-of-the-dark-side'],
+            [
+                'title' => 'The Power of the Dark Side',
+                'author_id' => $vader->id,
+                'body' => 'Kemampuan the Force dari sisi gelap memberikan kendali dan kekuatan yang tidak terbatas bagi mereka yang tidak takut merangkul amarah dan kedisiplinan sejati.',
+            ]
+        );
+
+        Post::firstOrCreate(
+            ['slug' => 'command-of-the-501st-legion'],
+            [
+                'title' => 'Command of the 501st Legion',
+                'author_id' => $vader->id,
+                'body' => 'Legiun 501 adalah garda terdepan armada tempur Kekaisaran. Disiplin, loyalitas, dan keahlian taktis mereka tak tertandingi di seluruh galaksi.',
+            ]
+        );
+
+        // Post milik Emperor Palpatine
+        Post::firstOrCreate(
+            ['slug' => 'the-rise-of-the-galactic-empire'],
+            [
+                'title' => 'The Rise of the Galactic Empire',
+                'author_id' => $palpatine->id,
+                'body' => 'Dari abu Republik yang korup, lahirlah tatanan baru yang membawa kedamaian, stabilitas, dan keamanan mutlak bagi setiap sistem bintang.',
+            ]
+        );
+
+        // 5. Tambahan data menggunakan Factory
+        Post::factory(3)->recycle([$vader, $palpatine])->create();
     }
 }
